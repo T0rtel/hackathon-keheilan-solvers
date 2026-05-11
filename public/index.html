@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keheilan</title>
+    <link rel="stylesheet" href="style.css">
+<base target="_blank">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-anim">
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="bg-orb"></div>
+        <div class="particles">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+        </div>
+    </div>
+
+    <!-- Cursor Glow -->
+    <div class="cursor-glow" id="cursor-glow"></div>
+
+    <!-- WELCOME SCREEN -->
+    <div id="welcome-screen" class="screen active">
+        <div class="center-content">
+            <h1 class="brand">Keheilan</h1>
+            <p class="tagline">Sign in to continue</p>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="showScreen('login-screen')">
+                    Log In
+                </button>
+                <button class="btn btn-secondary" onclick="showScreen('role-screen')">
+                    Sign Up
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROLE SELECTION SCREEN -->
+    <div id="role-screen" class="screen">
+        <div class="center-content">
+            <button class="back-link" onclick="showScreen('welcome-screen')">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M7.5 2L4 6L7.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Back
+            </button>
+
+            <h2 class="section-title">Choose your account type</h2>
+
+            <div class="role-grid">
+                <div class="role-option" onclick="selectRole('farmer')">
+                    <div class="role-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <path d="M16 4C9.373 4 4 9.373 4 16s5.373 12 12 12 12-5.373 12-12S22.627 4 16 4z" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M16 10v12M10 16h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="role-label">Farmer</span>
+                    <span class="role-desc">Create a farm account</span>
+                </div>
+
+                <div class="role-option" onclick="selectRole('investor')">
+                    <div class="role-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <path d="M16 4C9.373 4 4 9.373 4 16s5.373 12 12 12 12-5.373 12-12S22.627 4 16 4z" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M12 20l4-8 4 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="role-label">Investor</span>
+                    <span class="role-desc">Create an investor account</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIGNUP SCREEN -->
+    <div id="signup-screen" class="screen">
+        <div class="center-content">
+            <button class="back-link" onclick="showScreen('role-screen')">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M7.5 2L4 6L7.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Back
+            </button>
+
+            <h2 class="section-title">Create Account</h2>
+            <p class="role-display" id="signup-role-display">Farmer Account</p>
+
+            <form id="signup-form" onsubmit="handleSignup(event)">
+                <div class="field">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" placeholder="name@example.com" required>
+                </div>
+
+                <div class="field">
+                    <label for="signup-password">Password</label>
+                    <div class="input-wrap">
+                        <input type="password" id="signup-password" placeholder="Minimum 6 characters" required minlength="6">
+                        <button type="button" class="show-btn" onclick="togglePassword('signup-password', this)">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M10 4C5 4 1.5 7 1.5 10s3.5 6 8.5 6 8.5-3 8.5-6-3.5-6-8.5-6z" stroke="currentColor" stroke-width="1.5"/>
+                                <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="signup-confirm">Confirm Password</label>
+                    <div class="input-wrap">
+                        <input type="password" id="signup-confirm" placeholder="Re-enter password" required>
+                        <button type="button" class="show-btn" onclick="togglePassword('signup-confirm', this)">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M10 4C5 4 1.5 7 1.5 10s3.5 6 8.5 6 8.5-3 8.5-6-3.5-6-8.5-6z" stroke="currentColor" stroke-width="1.5"/>
+                                <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <span class="match-msg" id="match-msg"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary full" id="signup-btn">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-spinner"></span>
+                </button>
+            </form>
+
+            <p class="switch-text">
+                Already have an account? <a href="javascript:void(0)" onclick="showScreen('login-screen'); return false;">Log In</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="screen">
+        <div class="center-content">
+            <button class="back-link" onclick="showScreen('welcome-screen')">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M7.5 2L4 6L7.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Back
+            </button>
+
+            <h2 class="section-title">Log In</h2>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="field">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="name@example.com" required>
+                </div>
+
+                <div class="field">
+                    <label for="login-password">Password</label>
+                    <div class="input-wrap">
+                        <input type="password" id="login-password" placeholder="Enter your password" required>
+                        <button type="button" class="show-btn" onclick="togglePassword('login-password', this)">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M10 4C5 4 1.5 7 1.5 10s3.5 6 8.5 6 8.5-3 8.5-6-3.5-6-8.5-6z" stroke="currentColor" stroke-width="1.5"/>
+                                <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary full" id="login-btn">
+                    <span class="btn-text">Log In</span>
+                    <span class="btn-spinner"></span>
+                </button>
+            </form>
+
+            <p class="switch-text">
+                Don't have an account? <a href="javascript:void(0)" onclick="showScreen('role-screen'); return false;">Sign Up</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- SUCCESS SCREEN -->
+    <div id="success-screen" class="screen">
+        <div class="center-content">
+            <div class="success-mark">
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                    <circle cx="32" cy="32" r="30" stroke="#f5f5dc" stroke-width="2"/>
+                    <path d="M20 32l8 8 16-16" stroke="#f5f5dc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h2 class="section-title" id="success-title">Success</h2>
+            <p class="success-msg" id="success-msg">Your account has been created.</p>
+            <button class="btn btn-primary" onclick="window.location.href='/dashboard'">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
