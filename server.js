@@ -654,6 +654,8 @@ app.get('/api/admin/investments', requireAdmin, async (req, res) => {
     }
 });
 
+app.get('/health', (req, res) => res.send('OK'));
+
 app.post('/api/invest', requireRole('investor'), async (req, res) => {
     try {
         const { farm_id, amount_egp, profit_share_percent } = req.body;
@@ -670,3 +672,4 @@ app.post('/api/invest', requireRole('investor'), async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
