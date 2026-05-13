@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const db_farms = require('./db_farms');
