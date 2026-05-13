@@ -1,9 +1,4 @@
-/**
- * Mock AI services – replaces real Python models.
- */
-
-// Calculate risk score (0-100, higher = riskier)
-function calculateRisk(farm, farmerProfile) {
+async function calculateRisk(farm, farmerProfile) {
     let score = 50;
     if (farmerProfile) {
         if (farmerProfile.repayment_history === 'excellent') score -= 20;
@@ -15,7 +10,6 @@ function calculateRisk(farm, farmerProfile) {
     return Math.max(0, Math.min(100, score));
 }
 
-// Predict yield (tons per feddan)
 function predictYield(farm) {
     const baseYields = {
         wheat: 2.8,
@@ -30,7 +24,6 @@ function predictYield(farm) {
     return +(base * soilFactor * irrigationFactor).toFixed(2);
 }
 
-// Compute match ranking (1 = best)
 function calculateMatchRank(riskScore) {
     if (riskScore < 30) return 1;
     if (riskScore < 60) return 2;
@@ -38,34 +31,31 @@ function calculateMatchRank(riskScore) {
     return 4;
 }
 
-// Main analysis function – called by API
-function analyzeFarm(farmId, db, callback) {
-    db.get('SELECT * FROM farms WHERE id = ?', [farmId], (err, farm) => {
-        if (err) return callback(err);
+async function analyzeFarm(farmId, db, callback) {
+    try {
+        const farm = await db.get('SELECT * FROM farms WHERE id = ?', [farmId]);
         if (!farm) return callback(new Error('Farm not found'));
 
-        db.get('SELECT * FROM farmer_profiles WHERE user_id = ?', [farm.owner_id], (err, profile) => {
-            const risk = calculateRisk(farm, profile || null);
-            const yieldTons = predictYield(farm);
-            const rank = calculateMatchRank(risk);
+        const profile = await db.get('SELECT * FROM farmer_profiles WHERE user_id = ?', [farm.owner_id]);
+        const risk = await calculateRisk(farm, profile || null);
+        const yieldTons = predictYield(farm);
+        const rank = calculateMatchRank(risk);
 
-            // Upsert into ai_results (using farm_id unique constraint)
-            db.run(
-                `INSERT INTO ai_results (farm_id, risk_score, predicted_yield_tons, match_ranking)
-                 VALUES (?, ?, ?, ?)
-                 ON CONFLICT(farm_id) DO UPDATE SET
-                   risk_score=excluded.risk_score,
-                   predicted_yield_tons=excluded.predicted_yield_tons,
-                   match_ranking=excluded.match_ranking,
-                   analysis_date=CURRENT_TIMESTAMP`,
-                [farmId, risk, yieldTons, rank],
-                (err) => {
-                    if (err) return callback(err);
-                    callback(null, { risk_score: risk, predicted_yield_tons: yieldTons, match_ranking: rank });
-                }
-            );
-        });
-    });
+        await db.run(
+            `INSERT INTO ai_results (farm_id, risk_score, predicted_yield_tons, match_ranking)
+             VALUES (?, ?, ?, ?)
+             ON CONFLICT(farm_id) DO UPDATE SET
+               risk_score=excluded.risk_score,
+               predicted_yield_tons=excluded.predicted_yield_tons,
+               match_ranking=excluded.match_ranking,
+               analysis_date=CURRENT_TIMESTAMP`,
+            [farmId, risk, yieldTons, rank]
+        );
+        db.save();
+        callback(null, { risk_score: risk, predicted_yield_tons: yieldTons, match_ranking: rank });
+    } catch (err) {
+        callback(err);
+    }
 }
 
 module.exports = { analyzeFarm };

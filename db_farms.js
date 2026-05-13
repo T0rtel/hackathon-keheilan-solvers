@@ -4,10 +4,9 @@ function init(database) {
     db = database;
 }
 
-// Insert or update farmer profile
-function upsertFarmerProfile(userId, profile, callback) {
+async function upsertFarmerProfile(userId, profile) {
     const { age, experience_years, previous_loans_count, repayment_history, equipment_quality } = profile;
-    db.run(
+    await db.run(
         `INSERT INTO farmer_profiles (user_id, age, experience_years, previous_loans_count, repayment_history, equipment_quality)
          VALUES (?, ?, ?, ?, ?, ?)
          ON CONFLICT(user_id) DO UPDATE SET
@@ -16,14 +15,13 @@ function upsertFarmerProfile(userId, profile, callback) {
            previous_loans_count=excluded.previous_loans_count,
            repayment_history=excluded.repayment_history,
            equipment_quality=excluded.equipment_quality`,
-        [userId, age, experience_years, previous_loans_count, repayment_history, equipment_quality],
-        callback
+        [userId, age, experience_years, previous_loans_count, repayment_history, equipment_quality]
     );
+    db.save();
 }
 
-// Get farmer profile by user_id
-function getFarmerProfile(userId, callback) {
-    db.get('SELECT * FROM farmer_profiles WHERE user_id = ?', [userId], callback);
+async function getFarmerProfile(userId) {
+    return await db.get('SELECT * FROM farmer_profiles WHERE user_id = ?', [userId]);
 }
 
 module.exports = { init, upsertFarmerProfile, getFarmerProfile };
