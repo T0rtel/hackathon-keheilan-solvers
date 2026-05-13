@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keheilan - Farm Operator Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-container { position: relative; z-index: 1; min-height: 100vh; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .dash-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid rgba(245,245,220,0.1); }
+        .dash-nav .brand { font-size: 1.8rem; margin-bottom: 0; animation: none; letter-spacing: -1px; }
+        .dash-nav .nav-actions { display: flex; gap: 12px; align-items: center; }
+        .role-pill { background: rgba(201,160,48,0.15); border: 1px solid rgba(201,160,48,0.3); color: #c9a030; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .dash-card { background: rgba(245,245,220,0.06); border: 2px solid rgba(245,245,220,0.1); border-radius: 20px; padding: 24px; margin-bottom: 16px; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
+        .dash-card:hover { background: rgba(245,245,220,0.1); border-color: rgba(245,245,220,0.25); transform: translateY(-6px) scale(1.01); }
+        .dash-card h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--cream); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap:14px; margin-bottom:20px; }
+        .stats-row.small { grid-template-columns: repeat(3,1fr); }
+        .stat-box { background: rgba(245,245,220,0.06); border: 2px solid rgba(245,245,220,0.1); border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s; }
+        .stat-box:hover { background: rgba(245,245,220,0.1); border-color: rgba(245,245,220,0.2); transform: translateY(-4px); }
+        .stat-box .label { font-size: 0.7rem; color: rgba(245,245,220,0.6); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
+        .stat-box .value { font-size: 1.6rem; font-weight: 700; color: var(--cream); font-family: 'Playfair Display', serif; }
+        .stat-box .sub { font-size: 0.8rem; color: var(--success); margin-top: 4px; }
+        .detail-grid { display: grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-bottom:14px; }
+        .detail-box { background: rgba(245,245,220,0.05); border-radius:12px; padding:12px; transition: all 0.2s; }
+        .detail-box:hover { background: rgba(245,245,220,0.08); transform: translateY(-2px); }
+        .detail-box .label { font-size: 0.65rem; color: rgba(245,245,220,0.5); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+        .detail-box .value { font-size: 0.9rem; font-weight: 700; color: var(--cream); }
+        .progress-track { height: 6px; background: rgba(245,245,220,0.1); border-radius: 3px; margin-bottom: 8px; overflow: hidden; }
+        .progress-track.large { height: 10px; border-radius: 5px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--green-light)); border-radius: 3px; transition: width 0.5s; }
+        .chart-area { width: 100%; height: 200px; position: relative; }
+        .breakdown-item { background: rgba(245,245,220,0.05); border-radius:10px; padding:11px 14px; margin-bottom:8px; transition: all 0.2s; }
+        .breakdown-item:hover { background: rgba(245,245,220,0.08); }
+        .breakdown-info { display: flex; justify-content: space-between; margin-bottom:6px; flex-wrap:wrap; gap:4px; }
+        .breakdown-info span:first-child { font-size:0.85rem; color:var(--cream); font-weight:500; }
+        .breakdown-amount { font-size:0.85rem; color:var(--cream); font-family:'Playfair Display',serif; font-weight:700; }
+        .disbursement-item { background: rgba(245,245,220,0.05); border-radius:10px; padding:10px 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:8px; margin-bottom:7px; transition: all 0.2s; }
+        .disbursement-item:hover { background: rgba(245,245,220,0.08); }
+        .disbursement-item .date { font-size:0.8rem; color:rgba(245,245,220,0.5); }
+        .disbursement-item .amount { font-size:0.9rem; font-weight:700; color:var(--cream); font-family:'Playfair Display',serif; }
+        .status-badge { font-size:0.65rem; padding:3px 10px; border-radius:10px; font-weight:700; letter-spacing:0.3px; }
+        .status-badge.green { background: rgba(52,199,89,0.15); color: var(--success); }
+        .status-badge.amber { background: rgba(243,156,18,0.15); color: var(--warning); }
+        @media (max-width: 640px) { .stats-row { grid-template-columns: repeat(2,1fr); } .detail-grid { grid-template-columns: 1fr; } }
+        .field { margin-bottom: 12px; }
+        .field label, .form-group label { font-size:0.8rem; color:rgba(245,245,220,0.7); display:block; margin-bottom:4px; }
+        .field input, .field select, .form-group input, .form-group select { width:100%; padding:10px; background:rgba(245,245,220,0.05); border:1px solid rgba(245,245,220,0.2); border-radius:8px; color:var(--cream); }
+        .farm-list-item { background:rgba(245,245,220,0.05); border-radius:12px; padding:14px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+        .capital-form { margin-top:12px; }
+        .capital-item-row { display: flex; gap:8px; margin-bottom:8px; align-items: center; }
+        .capital-item-row input { flex:1; }
+        .btn-small { padding:6px 14px; font-size:0.8rem; border-radius:8px; }
+        .farm-selector { margin-bottom:20px; }
+        .farm-selector select { padding:10px 16px; background:rgba(245,245,220,0.1); border:1px solid rgba(245,245,220,0.3); border-radius:10px; color:var(--cream); font-size:1rem; width:100%; max-width:350px; }
+    </style>
+<base target="_blank">
+</head>
+<body>
+<div class="bg-anim">
+    <div class="bg-orb"></div><div class="bg-orb"></div><div class="bg-orb"></div>
+    <div class="particles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+<div class="cursor-glow" id="cursor-glow"></div>
+
+<div class="dashboard-container">
+    <!-- Nav -->
+    <div class="dash-nav">
+        <h1 class="brand">Keheilan</h1>
+        <div class="nav-actions">
+            <span class="role-pill">Farm Operator</span>
+            <button class="btn btn-secondary" onclick="logout()" style="padding:8px 16px;font-size:0.85rem;">Sign Out</button>
+        </div>
+    </div>
+
+    <!-- Greeting -->
+    <div style="margin-bottom:24px;">
+        <div style="font-size:0.75rem;color:rgba(245,245,220,0.5);letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Farm Operator Portal</div>
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--cream);">Welcome, <span id="farmer-name">Farmer</span></h2>
+    </div>
+
+    <!-- Farm Selector -->
+    <div class="farm-selector">
+        <label style="color:rgba(245,245,220,0.6); margin-bottom:6px; display:block;">Select Farm</label>
+        <select id="farm-select" onchange="switchFarm(this.value)"></select>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="label">AI Risk Score</div>
+            <div class="value" id="ai-score">--</div>
+            <div class="sub" id="ai-score-sub">AI Verified</div>
+        </div>
+        <div class="stat-box">
+            <div class="label">Capital Raised</div>
+            <div class="value" id="capital-raised">0</div>
+            <div class="sub" id="capital-target">of target</div>
+        </div>
+        <div class="stat-box">
+            <div class="label">Investor Interest</div>
+            <div class="value" id="investor-count">0</div>
+            <div class="sub">Active investors</div>
+        </div>
+        <div class="stat-box">
+            <div class="label">Yield Rating</div>
+            <div class="value" id="yield-rating">--</div>
+            <div class="sub">AI Verified</div>
+        </div>
+    </div>
+
+    <!-- Farm Profile -->
+    <div class="dash-card">
+        <h3>Farm Profile — <span id="profile-name">No farm selected</span></h3>
+        <div class="detail-grid">
+            <div class="detail-box"><div class="label">Location</div><div class="value" id="detail-location">--</div></div>
+            <div class="detail-box"><div class="label">Crop</div><div class="value" id="detail-crop">--</div></div>
+            <div class="detail-box"><div class="label">Area</div><div class="value" id="detail-area">--</div></div>
+            <div class="detail-box"><div class="label">Model</div><div class="value" id="detail-model">--</div></div>
+            <div class="detail-box"><div class="label">Est. Yield</div><div class="value" id="detail-yield">--</div></div>
+            <div class="detail-box"><div class="label">Shariah</div><div class="value">Certified ✓</div></div>
+        </div>
+    </div>
+
+    <!-- Yield Trend -->
+    <div class="dash-card">
+        <h3>Yield Trend (%)</h3>
+        <div class="chart-area"><canvas id="yieldChart" width="800" height="200"></canvas></div>
+    </div>
+
+    <!-- Capital Request & Breakdown -->
+    <div class="dash-card">
+        <h3>Capital Request</h3>
+        <div class="stats-row" style="grid-template-columns: repeat(3,1fr); margin-bottom:20px;">
+            <div class="stat-box" style="padding:14px;"><div class="label">Requested</div><div class="value" style="font-size:1.2rem;" id="cap-requested">0</div><div class="sub">Current round</div></div>
+            <div class="stat-box" style="padding:14px;"><div class="label">Funded</div><div class="value" style="font-size:1.2rem;" id="cap-funded">0</div><div class="sub" id="cap-funded-pct">0% complete</div></div>
+            <div class="stat-box" style="padding:14px;"><div class="label">Remaining</div><div class="value" style="font-size:1.2rem;" id="cap-remaining">0</div><div class="sub">To reach target</div></div>
+        </div>
+
+        <h3 style="margin-top:20px;margin-bottom:14px;">Capital Breakdown</h3>
+        <div id="breakdown-container">No items</div>
+
+        <h3 style="margin-top:20px;margin-bottom:14px;">Funding Progress</h3>
+        <div class="progress-track large"><div class="progress-fill" id="funding-progress-bar" style="width:0%;"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:rgba(245,245,220,0.5);">
+            <span id="funding-raised">EGP 0 raised</span>
+            <span style="color:var(--green);font-weight:700;" id="funding-percent">0% funded</span>
+        </div>
+
+        <button id="edit-capital-btn" class="btn btn-secondary btn-small" onclick="toggleCapitalForm()">Edit Capital Request</button>
+        <div id="capital-form-container" style="display:none; margin-top:14px;">
+            <div class="form-group"><label>Total Requested (EGP)</label><input type="number" id="req-amount" step="0.01"></div>
+            <div class="form-group"><label>Total Funded (EGP)</label><input type="number" id="funded-amount" step="0.01"></div>
+            <div class="form-group"><label>Breakdown Items</label><div id="items-container"></div><button class="btn btn-secondary btn-small" onclick="addItem()">+ Add Item</button></div>
+            <button class="btn btn-primary" onclick="saveCapital()">Save Capital</button>
+        </div>
+    </div>
+
+    <!-- Investors & Disbursements -->
+    <div class="dash-card">
+        <h3>Investors & Disbursements</h3>
+        <div id="investors-list">No investors yet.</div>
+        <hr style="border-color:rgba(245,245,220,0.1); margin:16px 0;">
+        <h4>Disbursement Log</h4>
+        <div id="disbursement-container">No disbursements.</div>
+        <button class="btn btn-secondary" onclick="document.getElementById('disbursement-form').style.display='block'">+ Log Disbursement</button>
+        <div id="disbursement-form" style="display:none; margin-top:12px;">
+            <div class="field"><label>Amount (EGP)</label><input type="number" id="disb-amount" required></div>
+            <div class="field"><label>Description</label><input type="text" id="disb-desc"></div>
+            <button class="btn btn-primary btn-small" onclick="addDisbursement()">Submit</button>
+            <button class="btn btn-secondary btn-small" onclick="document.getElementById('disbursement-form').style.display='none'">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Register New Farm -->
+    <div class="dash-card">
+        <h3>Register New Farm</h3>
+        <form id="add-farm-form">
+            <div class="field"><label>Location</label><input type="text" name="location" required></div>
+            <div class="field"><label>Crop Type</label><select name="crop_type" required><option value="">Select</option><option>Wheat</option><option>Dates</option><option>Cotton</option><option>Rice</option><option>Herbs</option></select></div>
+            <div class="field"><label>Area (feddans)</label><input type="number" name="area_feddans" step="0.1" required></div>
+            <div class="field"><label>Investment Model</label><select name="investment_model" required><option value="operations">Farm Operations</option><option value="fractional_land">Fractional Land</option><option value="hybrid">Hybrid</option></select></div>
+            <div class="field"><label>Expected Yield (t/feddan)</label><input type="number" name="expected_yield_tons" step="0.01"></div>
+            <div class="field"><label>Soil Quality</label><select name="soil_quality"><option value="">Choose</option><option>excellent</option><option>good</option><option>average</option><option>poor</option></select></div>
+            <div class="field"><label>Irrigation</label><select name="irrigation"><option value="">Choose</option><option>drip</option><option>canal</option><option>none</option></select></div>
+            <div class="field"><label>Weather Region</label><input type="text" name="weather_region" placeholder="e.g., Nile Delta"></div>
+            <button type="submit" class="btn btn-primary full">Add Farm</button>
+        </form>
+    </div>
+
+    <!-- Your Farms -->
+    <div class="dash-card">
+        <h3>Your Farms</h3>
+        <div id="my-farms">Loading...</div>
+    </div>
+</div>
+
+<script>
+const glow = document.getElementById('cursor-glow');
+let mx=0,my=0,gx=0,gy=0;
+document.addEventListener('mousemove', e=>{mx=e.clientX; my=e.clientY;});
+(function anim(){ gx+=(mx-gx)*0.08; gy+=(my-gy)*0.08; glow.style.left=gx+'px'; glow.style.top=gy+'px'; requestAnimationFrame(anim); })();
+
+document.querySelectorAll('.btn').forEach(b => {
+    b.addEventListener('mousemove', e => { const r=b.getBoundingClientRect(); const x=e.clientX-r.left-r.width/2; const y=e.clientY-r.top-r.height/2; b.style.transform=`translate(${x*0.15}px,${y*0.15}px) scale(1.02)`; });
+    b.addEventListener('mouseleave',()=>{ b.style.transform=''; b.style.transition='all 0.3s ease'; });
+    b.addEventListener('mouseenter',()=>{ b.style.transition='transform 0.1s ease-out'; });
+});
+
+async function logout() { await fetch('/api/logout',{method:'POST'}); window.location.href='/'; }
+
+let allFarms = [];
+let selectedFarmId = null;
+let capitalItems = [];
+
+async function loadFarms() {
+    try {
+        const res = await fetch('/api/farms');
+        allFarms = await res.json();
+        populateFarmSelect();
+        renderFarmList();
+        if (allFarms.length > 0) {
+            selectedFarmId = allFarms[0].id;
+            document.getElementById('farm-select').value = selectedFarmId;
+            await updateDashboard();
+        } else {
+            clearDashboard();
+        }
+    } catch (e) { console.error(e); }
+}
+
+function populateFarmSelect() {
+    const sel = document.getElementById('farm-select');
+    sel.innerHTML = allFarms.map(f => `<option value="${f.id}">${f.location} - ${f.crop_type} (${f.area_feddans} feddans)</option>`).join('');
+    if (allFarms.length === 0) sel.innerHTML = '<option value="">No farms</option>';
+}
+
+function renderFarmList() {
+    const container = document.getElementById('my-farms');
+    if (allFarms.length === 0) { container.innerHTML = '<p style="color:rgba(245,245,220,0.6);">No farms.</p>'; return; }
+    container.innerHTML = allFarms.map(f => `<div class="farm-list-item"><div><strong>${f.location} - ${f.crop_type}</strong> (${f.area_feddans} feddans)</div><button onclick="deleteFarm(${f.id})" style="background:none;border:1px solid var(--error);color:var(--error);border-radius:6px;padding:4px 12px;">Delete</button></div>`).join('');
+}
+
+async function deleteFarm(id) {
+    if (!confirm('Delete?')) return;
+    await fetch(`/api/farms/${id}`, { method: 'DELETE' });
+    loadFarms();
+}
+
+function switchFarm(farmId) {
+    selectedFarmId = farmId;
+    if (!farmId) { clearDashboard(); return; }
+    updateDashboard();
+}
+
+async function updateDashboard() {
+    if (!selectedFarmId) return;
+    try {
+        const [farmRes, capitalRes, disbursementsRes, investorsRes] = await Promise.all([
+            fetch(`/api/farms/${selectedFarmId}`),
+            fetch(`/api/farms/${selectedFarmId}/capital`),
+            fetch(`/api/disbursements/${selectedFarmId}`),
+            fetch(`/api/farms/${selectedFarmId}/investors`)
+        ]);
+        const farm = await farmRes.json();
+        const capital = await capitalRes.json();
+        const disbursements = await disbursementsRes.json();
+        const investors = await investorsRes.json();
+
+        // Profile
+        document.getElementById('profile-name').textContent = farm.location + ' ' + farm.crop_type;
+        document.getElementById('detail-location').textContent = farm.location || '--';
+        document.getElementById('detail-crop').textContent = farm.crop_type || '--';
+        document.getElementById('detail-area').textContent = (farm.area_feddans || 0) + ' Feddans';
+        document.getElementById('detail-model').textContent = farm.investment_model || 'operations';
+        document.getElementById('detail-yield').textContent = (farm.predicted_yield_tons || 0) + ' t/feddan';
+        document.getElementById('detail-shariah').textContent = 'Certified ✓';
+
+        // AI Score
+        const riskScore = farm.risk_score !== null ? farm.risk_score : 0;
+        document.getElementById('ai-score').textContent = riskScore.toFixed(0);
+        document.getElementById('ai-score-sub').textContent = riskScore < 40 ? 'Low risk' : riskScore < 70 ? 'Medium risk' : 'High risk';
+
+        // Yield rating
+        const yieldVal = farm.predicted_yield_tons || 0;
+        const rating = yieldVal > 3 ? 'A+' : yieldVal > 2 ? 'B+' : 'C';
+        document.getElementById('yield-rating').textContent = rating;
+
+        // Capital
+        const req = capital.requested_egp || 0;
+        const funded = capital.funded_egp || 0;
+        const remaining = req - funded;
+        const percent = req > 0 ? (funded / req * 100).toFixed(0) : 0;
+
+        document.getElementById('cap-requested').textContent = 'EGP ' + Number(req).toLocaleString();
+        document.getElementById('cap-funded').textContent = 'EGP ' + Number(funded).toLocaleString();
+        document.getElementById('cap-remaining').textContent = 'EGP ' + Number(remaining).toLocaleString();
+        document.getElementById('capital-raised').textContent = 'EGP ' + Number(funded).toLocaleString();
+        document.getElementById('capital-target').textContent = 'of EGP ' + Number(req).toLocaleString() + ' target';
+        document.getElementById('cap-funded-pct').textContent = percent + '% complete';
+        document.getElementById('funding-raised').textContent = 'EGP ' + funded.toLocaleString() + ' raised';
+        document.getElementById('funding-percent').textContent = percent + '% funded';
+        document.getElementById('funding-progress-bar').style.width = percent + '%';
+
+        // Breakdown
+        capitalItems = capital.items || [];
+        renderBreakdown(capitalItems, req);
+
+        // *** REAL INVESTOR COUNT & LIST ***
+        document.getElementById('investor-count').textContent = investors.length;
+        const investorsListDiv = document.getElementById('investors-list');
+        if (investors.length === 0) {
+            investorsListDiv.innerHTML = '<p style="color:rgba(245,245,220,0.5);">No investors yet.</p>';
+        } else {
+            let invHtml = '';
+            investors.forEach(inv => {
+                invHtml += `<div class="disbursement-item">
+                    <span>${inv.email}</span>
+                    <span class="amount">EGP ${Number(inv.amount_egp).toLocaleString()}</span>
+                    <span class="status-badge green">${inv.profit_share_percent}% share</span>
+                </div>`;
+            });
+            investorsListDiv.innerHTML = invHtml;
+        }
+
+        // Disbursements
+        const disbursementContainer = document.getElementById('disbursement-container');
+        if (disbursements.length === 0) {
+            disbursementContainer.innerHTML = '<p style="color:rgba(245,245,220,0.5);">No disbursements.</p>';
+        } else {
+            let disHtml = '';
+            disbursements.forEach(d => {
+                const badge = d.status === 'completed' ? 'green' : 'amber';
+                disHtml += `<div class="disbursement-item">
+                    <span class="date">${new Date(d.disbursed_at).toLocaleDateString()}</span>
+                    <span class="amount">EGP ${Number(d.amount_egp).toLocaleString()}</span>
+                    <span class="status-badge ${badge}">${d.status}</span>
+                </div>`;
+            });
+            disbursementContainer.innerHTML = disHtml;
+        }
+
+        // Yield chart (mock based on predicted yield)
+        yieldChartData = Array.from({length:7}, () => Math.floor((farm.predicted_yield_tons || 2) * 20 + Math.random()*10));
+        drawYieldChart();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function clearDashboard() {
+    document.getElementById('profile-name').textContent = 'No farm selected';
+    ['detail-location','detail-crop','detail-area','detail-model','detail-yield'].forEach(id => document.getElementById(id).textContent = '--');
+    document.getElementById('detail-shariah').textContent = 'Certified ✓';
+    document.getElementById('ai-score').textContent = '--';
+    document.getElementById('ai-score-sub').textContent = 'N/A';
+    document.getElementById('yield-rating').textContent = '--';
+    document.getElementById('capital-raised').textContent = '0';
+    document.getElementById('capital-target').textContent = 'of target';
+    document.getElementById('investor-count').textContent = '0';
+    ['cap-requested','cap-funded','cap-remaining'].forEach(id => document.getElementById(id).textContent = '0');
+    document.getElementById('cap-funded-pct').textContent = '0%';
+    document.getElementById('funding-raised').textContent = 'EGP 0 raised';
+    document.getElementById('funding-percent').textContent = '0%';
+    document.getElementById('funding-progress-bar').style.width = '0%';
+    document.getElementById('breakdown-container').innerHTML = 'No items';
+    document.getElementById('investors-list').innerHTML = 'No investors yet.';
+    document.getElementById('disbursement-container').innerHTML = 'No disbursements.';
+    capitalItems = [];
+    yieldChartData = [];
+    drawYieldChart();
+}
+
+function renderBreakdown(items, total) {
+    const container = document.getElementById('breakdown-container');
+    if (!items || items.length === 0) {
+        container.innerHTML = '<p style="color:rgba(245,245,220,0.5);">No items</p>';
+        return;
+    }
+    container.innerHTML = items.map(item => {
+        const pct = total > 0 ? (item.amount / total * 100).toFixed(0) : 0;
+        return `<div class="breakdown-item">
+            <div class="breakdown-info"><span>${item.name}</span><span class="breakdown-amount">EGP ${Number(item.amount).toLocaleString()}</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+        </div>`;
+    }).join('');
+}
+
+// Capital form
+function toggleCapitalForm() {
+    const form = document.getElementById('capital-form-container');
+    if (form.style.display === 'none') {
+        form.style.display = 'block';
+        document.getElementById('req-amount').value = document.getElementById('cap-requested').textContent.replace('EGP ','').replace(/,/g,'') || 0;
+        document.getElementById('funded-amount').value = document.getElementById('cap-funded').textContent.replace('EGP ','').replace(/,/g,'') || 0;
+        renderItemInputs(capitalItems);
+    } else {
+        form.style.display = 'none';
+    }
+}
+
+function renderItemInputs(items) {
+    const container = document.getElementById('items-container');
+    if (!items.length) { container.innerHTML = '<p style="color:rgba(245,245,220,0.5);">No items</p>'; return; }
+    container.innerHTML = items.map((it, idx) => `<div class="capital-item-row">
+        <input type="text" value="${it.name}" data-idx="${idx}" class="item-name">
+        <input type="number" step="0.01" value="${it.amount}" data-idx="${idx}" class="item-amount">
+        <button class="btn btn-secondary btn-small" onclick="removeItem(${idx})">X</button>
+    </div>`).join('');
+}
+
+function addItem() { capitalItems.push({name:'', amount:0}); renderItemInputs(capitalItems); }
+function removeItem(idx) { capitalItems.splice(idx,1); renderItemInputs(capitalItems); }
+
+async function saveCapital() {
+    const requested = parseFloat(document.getElementById('req-amount').value) || 0;
+    const funded = parseFloat(document.getElementById('funded-amount').value) || 0;
+    capitalItems = [];
+    document.querySelectorAll('.item-name').forEach((el,i) => {
+        const name = el.value.trim();
+        const amount = parseFloat(document.querySelectorAll('.item-amount')[i].value) || 0;
+        if (name) capitalItems.push({ name, amount });
+    });
+    await fetch(`/api/farms/${selectedFarmId}/capital`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ requested_egp: requested, funded_egp: funded, items: capitalItems })
+    });
+    toggleCapitalForm();
+    updateDashboard();
+}
+
+// Disbursement
+async function addDisbursement() {
+    const amount = parseFloat(document.getElementById('disb-amount').value);
+    const description = document.getElementById('disb-desc').value;
+    if (!amount) return;
+    await fetch(`/api/disbursements/${selectedFarmId}`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ amount, description })
+    });
+    document.getElementById('disb-amount').value = '';
+    document.getElementById('disb-desc').value = '';
+    document.getElementById('disbursement-form').style.display = 'none';
+    updateDashboard();
+}
+
+// Add Farm form
+document.getElementById('add-farm-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    const res = await fetch('/api/farms', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+    });
+    if (res.ok) { e.target.reset(); loadFarms(); }
+    else alert('Failed to add farm');
+});
+
+// Yield chart
+let yieldChartData = [82,78,85,88,91,87,94];
+const canvas = document.getElementById('yieldChart');
+const labels = ['Nov','Dec','Jan','Feb','Mar','Apr','May'];
+function drawYieldChart() {
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height, pad = 40;
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle = 'rgba(245,245,220,0.08)';
+    ctx.lineWidth = 1;
+    for (let i=0; i<=4; i++) { let y = pad + (h-2*pad)*i/4; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke(); }
+    const barW = (w-2*pad)/yieldChartData.length * 0.6;
+    const spacing = (w-2*pad)/yieldChartData.length;
+    yieldChartData.forEach((v,i) => {
+        const x = pad + spacing*i + spacing*0.2;
+        const barH = (h-2*pad)*(v-70)/30;
+        ctx.fillStyle = '#c9a030';
+        ctx.beginPath(); ctx.roundRect(x, h-pad-barH, barW, barH, 4); ctx.fill();
+    });
+    ctx.fillStyle = 'rgba(245,245,220,0.5)';
+    ctx.font = '11px sans-serif';
+    labels.forEach((l,i) => ctx.fillText(l, pad + spacing*i + spacing/2 - 10, h-10));
+}
+
+// Init
+loadFarms();
+</script>
+</body>
+</html>

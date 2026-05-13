@@ -1,7 +1,7 @@
 {
-  "name": "keheilan-auth",
+  "name": "keheilan-merged",
   "version": "1.0.0",
-  "description": "Keheilan authentication system",
+  "description": "Keheilan auth + dashboard merged project",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

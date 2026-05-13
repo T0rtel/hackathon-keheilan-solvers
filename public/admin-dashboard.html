@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keheilan Admin – AI Command Center</title>
+    <!-- Use both the global style and the dashboard-specific theme -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        /* Minimal overrides for admin-specific elements */
+        .nav-tabs {
+            display: flex;
+            gap: 24px;
+        }
+        .nav-tab {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 0;
+            border-bottom: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .nav-tab.active {
+            color: var(--text);
+            border-bottom-color: var(--gold);
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .data-table th, .data-table td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+        .data-table th {
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .status-badge.active {
+            background: rgba(52,199,89,0.15);
+            color: var(--green);
+        }
+        .status-badge.suspended {
+            background: rgba(255,59,48,0.15);
+            color: var(--red);
+        }
+        .action-btn {
+            background: none;
+            border: 1px solid;
+            border-radius: 8px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-right: 6px;
+            transition: 0.2s;
+        }
+        .btn-approve { border-color: var(--green); color: var(--green); }
+        .btn-approve:hover { background: rgba(52,199,89,0.1); }
+        .btn-suspend { border-color: var(--amber); color: var(--amber); }
+        .btn-suspend:hover { background: rgba(201,144,32,0.1); }
+        .btn-remove { border-color: var(--red); color: var(--red); }
+        .btn-remove:hover { background: rgba(208,80,64,0.1); }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+            margin-top: 16px;
+        }
+        .chart-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+        }
+        .chart-box h3 {
+            color: var(--text);
+            margin-bottom: 12px;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-anim">
+        <div class="bg-orb"></div><div class="bg-orb"></div><div class="bg-orb"></div>
+        <div class="particles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="cursor-glow" id="cursor-glow"></div>
+
+    <!-- Navbar (using dashboard.css navbar class for consistency) -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-text">Keheilan <span style="font-size:0.7rem; opacity:0.4;">ADMIN</span></span>
+        </div>
+        <div class="nav-role">
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="switchTab('overview', this)">Overview</button>
+                <button class="nav-tab" onclick="switchTab('users', this)">Users</button>
+                <button class="nav-tab" onclick="switchTab('ai', this)">AI Insights</button>
+                <button class="nav-tab" onclick="switchTab('investments', this)">Investments</button>
+            </div>
+            <button class="back-btn" onclick="logout()" style="font-size:0.8rem; padding:6px 16px;">Sign Out</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Overview Section -->
+        <div id="overview" class="section active">
+            <div class="greeting">
+                <div class="portal-label" style="color: var(--gold);">ADMINISTRATOR PORTAL</div>
+                <h1>Platform Overview</h1>
+            </div>
+            <div class="stats-grid" id="overview-stats"></div>
+            <div class="chart-grid">
+                <div class="chart-box">
+                    <h3>Overall Risk Index</h3>
+                    <canvas id="riskChart" width="400" height="200"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>Average Yield Forecast</h3>
+                    <canvas id="yieldChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management -->
+        <div id="users" class="section">
+            <div class="greeting">
+                <div class="portal-label" style="color: var(--gold);">USER MANAGEMENT</div>
+                <h1>Registered Users</h1>
+            </div>
+            <div class="card">
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; align-items: center;">
+                    <select id="user-role-filter" onchange="loadUsers()" style="padding:10px; background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--text);">
+                        <option value="">All Roles</option>
+                        <option value="farmer">Farmer</option>
+                        <option value="investor">Investor</option>
+                    </select>
+                    <input type="text" id="user-search" placeholder="Search by email" oninput="loadUsers()" style="padding:10px; background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--text); flex:1;">
+                    <select id="user-status-filter" onchange="loadUsers()" style="padding:10px; background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--text);">
+                        <option value="">All Statuses</option>
+                        <option value="active">Active</option>
+                        <option value="suspended">Suspended</option>
+                    </select>
+                </div>
+                <table class="data-table" id="users-table">
+                    <thead><tr><th>Email</th><th>Role</th><th>Status</th><th>Registered</th><th>Actions</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- AI Insights -->
+        <div id="ai" class="section">
+            <div class="greeting">
+                <div class="portal-label" style="color: var(--gold);">AI MONITORING</div>
+                <h1>Model Insights</h1>
+            </div>
+            <div class="chart-grid">
+                <div class="chart-box">
+                    <h3>Risk Scores</h3>
+                    <div id="risk-list"></div>
+                </div>
+                <div class="chart-box">
+                    <h3>Yield Predictions</h3>
+                    <div id="yield-list"></div>
+                </div>
+                <div class="chart-box">
+                    <h3>Investor Matching</h3>
+                    <div id="matching-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investments -->
+        <div id="investments" class="section">
+            <div class="greeting">
+                <div class="portal-label" style="color: var(--gold);">INVESTMENT MONITORING</div>
+                <h1>Ongoing Investments</h1>
+            </div>
+            <div class="card">
+                <table class="data-table" id="investments-table">
+                    <thead><tr><th>Investor</th><th>Farm</th><th>Crop</th><th>Amount (EGP)</th><th>Share %</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cursor glow (same as other dashboards)
+        const glow = document.getElementById('cursor-glow');
+        let mx=0,my=0,gx=0,gy=0;
+        document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+        (function anim(){gx+=(mx-gx)*0.08;gy+=(my-gy)*0.08;glow.style.left=gx+'px';glow.style.top=gy+'px';requestAnimationFrame(anim)})();
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if (el) el.classList.add('active');
+            if (tabId === 'overview') loadOverview();
+            else if (tabId === 'users') loadUsers();
+            else if (tabId === 'ai') loadAIData();
+            else if (tabId === 'investments') loadInvestments();
+        }
+
+        async function logout() { await fetch('/api/logout',{method:'POST'}); window.location.href='/'; }
+
+        // ==================== OVERVIEW ====================
+        async function loadOverview() {
+            const res = await fetch('/api/admin/stats');
+            const stats = await res.json();
+            const container = document.getElementById('overview-stats');
+            container.innerHTML = `
+                <div class="stat-card"><div class="stat-accent forest"></div><div class="stat-label">Farmers</div><div class="stat-value">${stats.totalFarmers}</div></div>
+                <div class="stat-card"><div class="stat-accent investor"></div><div class="stat-label">Investors</div><div class="stat-value">${stats.totalInvestors}</div></div>
+                <div class="stat-card"><div class="stat-accent green"></div><div class="stat-label">Active Investments</div><div class="stat-value">${stats.activeInvestments}</div></div>
+                <div class="stat-card"><div class="stat-accent gold"></div><div class="stat-label">Total Funding</div><div class="stat-value">EGP ${Number(stats.totalFunding).toLocaleString()}</div></div>
+                <div class="stat-card"><div class="stat-accent brown"></div><div class="stat-label">Avg Risk Score</div><div class="stat-value">${stats.avgRiskScore.toFixed(1)}</div></div>
+                <div class="stat-card"><div class="stat-accent operator"></div><div class="stat-label">Avg Yield (t/fed)</div><div class="stat-value">${stats.avgPredictedYield.toFixed(2)}</div></div>
+            `;
+            drawOverviewChart('riskChart', stats.avgRiskScore, 'Risk Index');
+            drawOverviewChart('yieldChart', stats.avgPredictedYield, 'Yield Forecast');
+        }
+
+        function drawOverviewChart(canvasId, value, label) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#d8c89a';
+            ctx.font = '14px "Cinzel", serif';
+            ctx.fillText(label + ': ' + value, 20, 40);
+            ctx.fillStyle = '#c9a030';
+            const barWidth = Math.min(value * 3, 350);
+            ctx.fillRect(20, 60, barWidth, 90);
+        }
+
+        // ==================== USERS ====================
+        async function loadUsers() {
+            const role = document.getElementById('user-role-filter').value;
+            const search = document.getElementById('user-search').value;
+            const status = document.getElementById('user-status-filter').value;
+            const params = new URLSearchParams({ role, search, status });
+            const res = await fetch('/api/admin/users?' + params.toString());
+            const users = await res.json();
+            const tbody = document.querySelector('#users-table tbody');
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.email}</td>
+                    <td>${u.role}</td>
+                    <td><span class="status-badge ${u.status || 'active'}">${u.status || 'active'}</span></td>
+                    <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                    <td>
+                        ${u.status === 'suspended'
+                            ? `<button class="action-btn btn-approve" onclick="updateUserStatus(${u.id},'active')">Approve</button>`
+                            : `<button class="action-btn btn-suspend" onclick="updateUserStatus(${u.id},'suspended')">Suspend</button>`}
+                        <button class="action-btn btn-remove" onclick="deleteUser(${u.id})">Remove</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateUserStatus(id, status) {
+            await fetch(`/api/admin/users/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ status })
+            });
+            loadUsers();
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Permanently delete this user?')) return;
+            await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+            loadUsers();
+        }
+
+        // ==================== AI DATA ====================
+        async function loadAIData() {
+            const [risks, yields, matching] = await Promise.all([
+                fetch('/api/admin/ai/risks').then(r => r.json()),
+                fetch('/api/admin/ai/yields').then(r => r.json()),
+                fetch('/api/admin/ai/matching').then(r => r.json())
+            ]);
+            document.getElementById('risk-list').innerHTML = risks.map(f =>
+                `<div style="padding:8px 0; border-bottom:1px solid var(--border);"><strong>${f.location}</strong> ${f.crop_type} – <span style="color:var(--gold)">${f.risk_score}</span></div>`
+            ).join('');
+            document.getElementById('yield-list').innerHTML = yields.map(f =>
+                `<div style="padding:8px 0; border-bottom:1px solid var(--border);"><strong>${f.location}</strong> ${f.crop_type} – ${f.predicted_yield_tons} t/fed</div>`
+            ).join('');
+            document.getElementById('matching-list').innerHTML = matching.map(f =>
+                `<div style="padding:8px 0; border-bottom:1px solid var(--border);">#${f.match_ranking} ${f.location} ${f.crop_type} – ${f.investor_count} investors</div>`
+            ).join('');
+        }
+
+        // ==================== INVESTMENTS ====================
+        async function loadInvestments() {
+            const res = await fetch('/api/admin/investments');
+            const investments = await res.json();
+            const tbody = document.querySelector('#investments-table tbody');
+            tbody.innerHTML = investments.map(inv => `
+                <tr>
+                    <td>${inv.investor_email}</td>
+                    <td>${inv.location}</td>
+                    <td>${inv.crop_type}</td>
+                    <td>${Number(inv.amount_egp).toLocaleString()}</td>
+                    <td>${inv.profit_share_percent}%</td>
+                    <td><span class="status-badge ${inv.status}">${inv.status}</span></td>
+                    <td>${new Date(inv.invested_at).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Initial load
+        loadOverview();
+    </script>
+</body>
+</html>

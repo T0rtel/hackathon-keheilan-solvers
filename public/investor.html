@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keheilan - Investor Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Same dashboard-specific styles as before – kept for consistency */
+        .dashboard-container { position: relative; z-index: 1; min-height: 100vh; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .dash-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid rgba(245, 245, 220, 0.1); }
+        .dash-nav .brand { font-size: 1.8rem; margin-bottom: 0; animation: none; letter-spacing: -1px; }
+        .dash-nav .nav-actions { display: flex; gap: 12px; align-items: center; }
+        .role-pill { background: rgba(74, 154, 64, 0.15); border: 1px solid rgba(74, 154, 64, 0.3); color: #5aab50; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .dash-card { background: rgba(245, 245, 220, 0.06); border: 2px solid rgba(245, 245, 220, 0.1); border-radius: 20px; padding: 24px; margin-bottom: 16px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .dash-card:hover { background: rgba(245, 245, 220, 0.1); border-color: rgba(245, 245, 220, 0.25); transform: translateY(-6px) scale(1.01); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15); }
+        .dash-card h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--cream); margin-bottom: 16px; }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+        .stat-box { background: rgba(245, 245, 220, 0.06); border: 2px solid rgba(245, 245, 220, 0.1); border-radius: 16px; padding: 20px 16px; text-align: center; transition: all 0.3s ease; }
+        .stat-box:hover { background: rgba(245, 245, 220, 0.1); border-color: rgba(245, 245, 220, 0.2); transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .stat-box .label { font-size: 0.7rem; color: rgba(245,245,220,0.6); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+        .stat-box .value { font-size: 1.6rem; font-weight: 700; color: var(--cream); font-family: 'Playfair Display', serif; }
+        .stat-box .sub { font-size: 0.8rem; color: var(--success); margin-top: 4px; }
+        .farm-card { background: rgba(245,245,220,0.06); border: 2px solid rgba(245,245,220,0.1); border-radius: 16px; padding: 18px; margin-bottom: 12px; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .farm-card:hover { background: rgba(245,245,220,0.1); border-color: rgba(245,245,220,0.25); transform: translateY(-4px) scale(1.01); }
+        .farm-card.expanded { border-color: rgba(245,245,220,0.3); }
+        .farm-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .farm-title { font-size: 1rem; font-weight: 700; color: var(--cream); font-family: 'Playfair Display', serif; }
+        .farm-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+        .meta-tag { font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; background: rgba(245,245,220,0.08); color: rgba(245,245,220,0.7); }
+        .meta-tag.green { background: rgba(52,199,89,0.15); color: var(--success); }
+        .meta-tag.amber { background: rgba(243,156,18,0.15); color: var(--warning); }
+        .farm-roi-box { text-align: right; }
+        .farm-roi-box .label { font-size: 0.7rem; color: rgba(245,245,220,0.5); margin-bottom: 4px; }
+        .farm-roi-box .value { font-size: 1.4rem; font-weight: 700; color: var(--success); font-family: 'Playfair Display', serif; }
+        .score-circle { width: 44px; height: 44px; border-radius: 50%; background: rgba(245,245,220,0.1); border: 2px solid rgba(245,245,220,0.3); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; color: var(--cream); font-family: 'Playfair Display', serif; }
+        .farm-details { display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(245,245,220,0.1); }
+        .farm-card.expanded .farm-details { display: block; }
+        .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+        .detail-box { background: rgba(245,245,220,0.05); border-radius: 12px; padding: 12px; }
+        .detail-box .label { font-size: 0.65rem; color: rgba(245,245,220,0.5); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+        .detail-box .value { font-size: 0.9rem; font-weight: 700; color: var(--cream); }
+        .chart-area { width: 100%; height: 200px; }
+        @media (max-width: 640px) { .stats-row { grid-template-columns: repeat(2, 1fr); } .detail-grid { grid-template-columns: 1fr; } }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="bg-anim">
+        <div class="bg-orb"></div><div class="bg-orb"></div><div class="bg-orb"></div>
+        <div class="particles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="cursor-glow" id="cursor-glow"></div>
+
+    <div class="dashboard-container">
+        <div class="dash-nav">
+            <h1 class="brand">Keheilan</h1>
+            <div class="nav-actions">
+                <span class="role-pill">Investor</span>
+                <button class="btn btn-secondary" onclick="logout()" style="padding: 8px 16px; font-size: 0.85rem;">Sign Out</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+            <div style="font-size:0.75rem;color:rgba(245,245,220,0.5);letter-spacing:3px;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Investor Portal</div>
+            <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--cream);">Welcome back</h2>
+        </div>
+
+        <div class="stats-row" id="stats-row">
+            <div class="stat-box"><div class="label">Portfolio Value</div><div class="value">EGP 68K</div><div class="sub">+41.7% YTD</div></div>
+            <div class="stat-box"><div class="label">Active Farms</div><div class="value" id="active-farms">0</div><div class="sub">Investments</div></div>
+            <div class="stat-box"><div class="label">Avg. AI Score</div><div class="value" id="avg-score">--</div><div class="sub">Risk Rating</div></div>
+            <div class="stat-box"><div class="label">Risk Level</div><div class="value">Low</div><div class="sub">AI Assessed</div></div>
+        </div>
+
+        <div class="dash-card">
+            <h3>AI-Ranked Farm Opportunities</h3>
+            <div id="farm-list">Loading farms...</div>
+        </div>
+    </div>
+
+    <script>
+        const glow = document.getElementById('cursor-glow');
+        let mx=0,my=0,gx=0,gy=0;
+        document.addEventListener('mousemove',e=>{mx=e.clientX; my=e.clientY;});
+        (function anim(){ gx+=(mx-gx)*0.08; gy+=(my-gy)*0.08; glow.style.left=gx+'px'; glow.style.top=gy+'px'; requestAnimationFrame(anim); })();
+
+        document.querySelectorAll('.btn').forEach(b => {
+            b.addEventListener('mousemove', e => { const r=b.getBoundingClientRect(); const x=e.clientX-r.left-r.width/2; const y=e.clientY-r.top-r.height/2; b.style.transform=`translate(${x*0.15}px,${y*0.15}px) scale(1.02)`; });
+            b.addEventListener('mouseleave',()=>{ b.style.transform=''; b.style.transition='all 0.3s ease'; });
+            b.addEventListener('mouseenter',()=>{ b.style.transition='transform 0.1s ease-out'; });
+        });
+
+        async function logout() { await fetch('/api/logout',{method:'POST'}); window.location.href='/'; }
+
+        function toggleFarm(el) { el.classList.toggle('expanded'); }
+
+        async function loadFarms() {
+            try {
+                const res = await fetch('/api/investor/match');
+                const farms = await res.json();
+                const container = document.getElementById('farm-list');
+                if (!farms.length) {
+                    container.innerHTML = '<p style="color:var(--cream);opacity:0.6;">No farm opportunities available.</p>';
+                    return;
+                }
+                let html = '';
+                farms.forEach(f => {
+                    const riskColor = f.risk_score < 40 ? 'var(--success)' : f.risk_score < 70 ? 'var(--warning)' : 'var(--error)';
+                    html += `
+                    <div class="farm-card" onclick="toggleFarm(this)">
+                        <div class="farm-header">
+                            <div>
+                                <div class="farm-title">${f.location} ${f.crop_type}</div>
+                                <div class="farm-meta">
+                                    <span class="meta-tag">${f.location}</span>
+                                    <span class="meta-tag">${f.crop_type}</span>
+                                    <span class="meta-tag ${f.risk_score<40?'green':f.risk_score<70?'amber':''}">Risk ${f.risk_score}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:16px;">
+                                <div class="farm-roi-box">
+                                    <div class="label">AI Risk Score</div>
+                                    <div class="value" style="color:${riskColor}">${f.risk_score}</div>
+                                </div>
+                                <div class="score-circle">${f.match_ranking || '?'}</div>
+                            </div>
+                        </div>
+                        <div class="farm-details">
+                            <div class="detail-grid">
+                                <div class="detail-box"><div class="label">Area</div><div class="value">${f.area_feddans} feddans</div></div>
+                                <div class="detail-box"><div class="label">Predicted Yield</div><div class="value">${f.predicted_yield_tons || 'N/A'} t/feddan</div></div>
+                                <div class="detail-box"><div class="label">Soil</div><div class="value">${f.soil_quality || 'N/A'}</div></div>
+                            </div>
+                            <button class="btn btn-primary" style="padding:10px 20px;">Invest in This Farm →</button>
+                        </div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+
+                // Update stats
+                document.getElementById('active-farms').textContent = farms.length;
+                const avgScore = (farms.reduce((s,f)=>s+f.risk_score,0)/farms.length).toFixed(1);
+                document.getElementById('avg-score').textContent = avgScore;
+            } catch (err) {
+                console.error(err);
+                document.getElementById('farm-list').innerHTML = '<p style="color:var(--error);">Failed to load farms.</p>';
+            }
+        }
+
+        loadFarms();
+    </script>
+</body>
+</html>

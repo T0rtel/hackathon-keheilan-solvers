@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keheilan</title>
+    <title>Keheilan – AI-Powered Agricultural Investment</title>
     <link rel="stylesheet" href="style.css">
-<base target="_blank">
+    <base target="_self">
 </head>
 <body>
     <!-- Animated Background -->
@@ -21,181 +21,66 @@
 
     <!-- Cursor Glow -->
     <div class="cursor-glow" id="cursor-glow"></div>
-    <!-- test -->
-    <!-- WELCOME SCREEN -->
-    <div id="welcome-screen" class="screen active">
-        <div class="center-content">
-            <h1 class="brand">Keheilan</h1>
-            <p class="tagline">Sign in to continue</p>
 
-            <div class="actions">
-                <button class="btn btn-primary" onclick="showScreen('login-screen')">
-                    Log In
-                </button>
-                <button class="btn btn-secondary" onclick="showScreen('role-screen')">
-                    Sign Up
-                </button>
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="nav-brand">Keheilan</div>
+            <div class="nav-actions">
+                <button class="btn btn-primary" id="portal-btn-nav">Open Portal</button>
             </div>
-        </div>
-    </div>
+        </nav>
 
-    <!-- ROLE SELECTION SCREEN -->
-    <div id="role-screen" class="screen">
-        <div class="center-content">
-            <button class="back-link" onclick="showScreen('welcome-screen')">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M7.5 2L4 6L7.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Back
-            </button>
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Empowering Egyptian Agriculture<br>Through <span class="accent">AI & Shariah‑Compliant</span> Investment</h1>
+            <p>Connect with verified farms, grow capital ethically, and let artificial intelligence guide every decision.</p>
+            <button class="btn btn-primary btn-lg" onclick="scrollToSection('about')">Learn More</button>
+        </section>
 
-            <h2 class="section-title">Choose your account type</h2>
-
-            <div class="role-grid">
-                <div class="role-option" onclick="selectRole('farmer')">
-                    <div class="role-icon">
-                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                            <path d="M16 4C9.373 4 4 9.373 4 16s5.373 12 12 12 12-5.373 12-12S22.627 4 16 4z" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M16 10v12M10 16h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        </svg>
-                    </div>
-                    <span class="role-label">Farmer</span>
-                    <span class="role-desc">Create a farm account</span>
+        <!-- Mission, Vision, Idea, About, Contact -->
+        <section id="about" class="content-section">
+            <div class="card-container">
+                <div class="glass-card">
+                    <h2>Our Mission</h2>
+                    <p>To democratise agricultural financing and unlock the full potential of Egypt's farmland through technology, transparency, and trust.</p>
                 </div>
-
-                <div class="role-option" onclick="selectRole('investor')">
-                    <div class="role-icon">
-                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                            <path d="M16 4C9.373 4 4 9.373 4 16s5.373 12 12 12 12-5.373 12-12S22.627 4 16 4z" stroke="currentColor" stroke-width="1.5"/>
-                            <path d="M12 20l4-8 4 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </div>
-                    <span class="role-label">Investor</span>
-                    <span class="role-desc">Create an investor account</span>
+                <div class="glass-card">
+                    <h2>Our Vision</h2>
+                    <p>A thriving agricultural ecosystem where every farmer has access to the capital they need, and every investor can grow wealth ethically.</p>
+                </div>
+                <div class="glass-card">
+                    <h2>The Idea</h2>
+                    <p>Leveraging artificial intelligence to assess farm viability, predict yields, and match the right investors with the right opportunities – all while adhering to Islamic finance principles.</p>
+                </div>
+                <div class="glass-card">
+                    <h2>About Keheilan</h2>
+                    <p>Founded by agritech and fintech experts, Keheilan bridges the gap between Egyptian farmers and global investors. Our platform provides end‑to‑end support, from AI‑driven farm listings to automated investor reporting.</p>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- SIGNUP SCREEN -->
-    <div id="signup-screen" class="screen">
-        <div class="center-content">
-            <button class="back-link" onclick="showScreen('role-screen')">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M7.5 2L4 6L7.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Back
-            </button>
-
-            <h2 class="section-title">Create Account</h2>
-            <p class="role-display" id="signup-role-display">Farmer Account</p>
-
-            <form id="signup-form" onsubmit="handleSignup(event)">
-                <div class="field">
-                    <label for="signup-email">Email</label>
-                    <input type="email" id="signup-email" placeholder="name@example.com" required>
-                </div>
-
-                <div class="field">
-                    <label for="signup-password">Password</label>
-                    <div class="input-wrap">
-                        <input type="password" id="signup-password" placeholder="Minimum 6 characters" required minlength="6">
-                        <button type="button" class="show-btn" onclick="togglePassword('signup-password', this)">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M10 4C5 4 1.5 7 1.5 10s3.5 6 8.5 6 8.5-3 8.5-6-3.5-6-8.5-6z" stroke="currentColor" stroke-width="1.5"/>
-                                <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label for="signup-confirm">Confirm Password</label>
-                    <div class="input-wrap">
-                        <input type="password" id="signup-confirm" placeholder="Re-enter password" required>
-                        <button type="button" class="show-btn" onclick="togglePassword('signup-confirm', this)">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M10 4C5 4 1.5 7 1.5 10s3.5 6 8.5 6 8.5-3 8.5-6-3.5-6-8.5-6z" stroke="currentColor" stroke-width="1.5"/>
-                                <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <span class="match-msg" id="match-msg"></span>
-                </div>
-
-                <button type="submit" class="btn btn-primary full" id="signup-btn">
-                    <span class="btn-text">Create Account</span>
-                    <span class="btn-spinner"></span>
-                </button>
-            </form>
-
-            <p class="switch-text">
-                Already have an account? <a href="javascript:void(0)" onclick="showScreen('login-screen'); return false;">Log In</a>
-            </p>
-        </div>
-    </div>
-
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="screen">
-        <div class="center-content">
-            <button class="back-link" onclick="showScreen('welcome-screen')">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M7.5 2L4 6L7.5 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Back
-            </button>
-
-            <h2 class="section-title">Log In</h2>
-
-            <form id="login-form" onsubmit="handleLogin(event)">
-                <div class="field">
-                    <label for="login-email">Email</label>
-                    <input type="email" id="login-email" placeholder="name@example.com" required>
-                </div>
-
-                <div class="field">
-                    <label for="login-password">Password</label>
-                    <div class="input-wrap">
-                        <input type="password" id="login-password" placeholder="Enter your password" required>
-                        <button type="button" class="show-btn" onclick="togglePassword('login-password', this)">
-                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <path d="M10 4C5 4 1.5 7 1.5 10s3.5 6 8.5 6 8.5-3 8.5-6-3.5-6-8.5-6z" stroke="currentColor" stroke-width="1.5"/>
-                                <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary full" id="login-btn">
-                    <span class="btn-text">Log In</span>
-                    <span class="btn-spinner"></span>
-                </button>
-            </form>
-
-            <p class="switch-text">
-                Don't have an account? <a href="javascript:void(0)" onclick="showScreen('role-screen'); return false;">Sign Up</a>
-            </p>
-        </div>
-    </div>
-
-    <!-- SUCCESS SCREEN -->
-    <div id="success-screen" class="screen">
-        <div class="center-content">
-            <div class="success-mark">
-                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                    <circle cx="32" cy="32" r="30" stroke="#f5f5dc" stroke-width="2"/>
-                    <path d="M20 32l8 8 16-16" stroke="#f5f5dc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+            <div class="contact glass-card">
+                <h2>Contact</h2>
+                <p>Email: <a href="mailto:hello@keheilan.com">hello@keheilan.com</a></p>
+                <p>Cairo, Egypt</p>
             </div>
-            <h2 class="section-title" id="success-title">Success</h2>
-            <p class="success-msg" id="success-msg">Your account has been created.</p>
-            <button class="btn btn-primary" onclick="window.location.href='/dashboard'">
-                Continue
-            </button>
-        </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 Keheilan. All rights reserved.</p>
+        </footer>
     </div>
 
-    <!-- TOAST -->
+    <!-- PORTAL MODAL (covers all auth interactions) -->
+    <div class="modal-overlay" id="modal-overlay"></div>
+
+    <div class="modal" id="portal-modal">
+        <button class="modal-close" id="portal-close">&times;</button>
+        <div id="portal-content"></div>
+    </div>
+
+    <!-- Toast -->
     <div id="toast"></div>
 
     <script src="script.js"></script>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keheilan – Dashboard</title>
+    <!-- Chart.js for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* ===== PORTAL GLOBAL STYLES ===== */
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=DM+Sans:wght@300;400;500;700&display=swap');
+        
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; }
+        body {
+            background: #060e06;
+            font-family: 'DM Sans', sans-serif;
+            color: #d8c89a;
+            -webkit-font-smoothing: antialiased;
+        }
+        #root { min-height: 100vh; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e3820; border-radius: 4px; }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+        .fade-in { animation: fadeIn 0.25s ease forwards; }
+
+        /* Override any global styles if needed */
+        button { font-family: 'DM Sans', sans-serif; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script src="portal.js"></script>
+</body>
+</html>
